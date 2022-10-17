@@ -1,6 +1,5 @@
 import MerkleTools, {Proof} from 'merkle-tools';
-import {VerifiableCredential} from "../types/VerifiableCredential";
-import {log} from "util";
+import {Leaf, VerifiableCredential} from "../types/VerifiableCredential";
 
 export type MerkleProof = {
     proof: Proof<string>[],
@@ -8,11 +7,17 @@ export type MerkleProof = {
     merkleRoot: string,
 }
 
-export const extractMerkleProofFromCredential = (credential: VerifiableCredential, identifier: string): MerkleProof => {
-    console.log('extractMerkleProofFromCredential', credential, identifier);
+export const getClaim = (credential: VerifiableCredential, identifier: string): Leaf => {
     const claim = credential.proof.leaves.find(claim => claim.identifier === identifier);
 
     if (!claim) throw new Error(`No claim found for identifier ${identifier}`);
+
+    return claim;
+}
+
+export const extractMerkleProofFromCredential = (credential: VerifiableCredential, identifier: string): MerkleProof => {
+    console.log('extractMerkleProofFromCredential', credential, identifier);
+    const claim = getClaim(credential, identifier);
 
     console.log('claim', claim);
 

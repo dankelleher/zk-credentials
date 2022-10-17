@@ -1,55 +1,106 @@
 import {FC, useCallback, useState} from "react";
 import {useCredentials} from "../hooks/useCredentials";
-import {extractMerkleProofFromCredential, MerkleProof} from "../lib/credentials";
+import {extractMerkleProofFromCredential, getClaim, MerkleProof} from "../lib/credentials";
 import {VerifiableCredential} from "../types/VerifiableCredential";
+import {
+    Box, Button,
+    Container,
+    FormControl,
+    FormLabel, HStack, Input,
+    Stack,
+    Table,
+    TableContainer,
+    Tbody,
+    Td,
+    Textarea,
+    Th,
+    Thead,
+    Tr,
+} from "@chakra-ui/react";
+import {useCredentialProof} from "../context/CredentialProof";
+
+const claimIdentifier = 'claim-cvc:Document.dateOfBirth-v1';
+
+const dummyCredential: VerifiableCredential = require('../dummyCredential.json');
 
 export const Credential: FC = () => {
     const credentials = useCredentials();
+    const { set } = useCredentialProof();
     const [merkleProof, setMerkleProof] = useState<MerkleProof>();
+    const [claimValue, setClaimValue] = useState<string>();
+    const [credentialString, setCredentialString] = useState<string>();
 
-    const prove = useCallback(async (credential: VerifiableCredential) => {
-        setMerkleProof(extractMerkleProofFromCredential(credential, 'claim-cvc:Document.dateOfBirth-v1'));
-    }, []);
+    const selectCredential = useCallback(async (credential: VerifiableCredential) => {
+        const merkle = extractMerkleProofFromCredential(credential, claimIdentifier);
+        const claim = getClaim(credential, claimIdentifier);
 
-    const store = useCallback((credentialString: string) => {
-        credentials.addCredential(JSON.parse(credentialString));
+        setMerkleProof(merkle);
+        setClaimValue(claim.value);
+
+        set('merkleProof', merkle);
+        set('issuer', credential.issuer);
+    }, [set]);
+
+    const store = useCallback(() => {
+        if (credentialString) {
+            credentials.addCredential(JSON.parse(credentialString));
+            credentials.saveCredentials();
+            setCredentialString('');
+        }
+    }, [credentials, credentialString]);
+
+    const getDummyCredential = useCallback(() => {
+        setCredentialString(JSON.stringify(dummyCredential, null, 2));
+    }, [setCredentialString]);
+
+    const clearCredentials = useCallback(() => {
+        setCredentialString('');
+        credentials.clearCredentials();
     }, [credentials]);
 
     return (
-        <div>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                store(e.currentTarget.credential.value);
-            }}>
-                <label htmlFor="credential">Credential</label>
-                <textarea id="credential" name="credential"/>
-                <input type="submit" value="Store"/>
-            </form>
-            <button onClick={credentials.clearCredentials}>Clear</button>
-            <button onClick={credentials.saveCredentials}>Save</button>
-            <table>
-                <thead>
-                <tr>
-                    <th>Subject</th>
-                    <th>Issuer</th>
-                    <th>Issued</th>
-                    <th>Type</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {credentials.credentials.map((credential, index) => (
-                    <tr key={index}>
-                        <td>{credential.credentialSubject.id}</td>
-                        <td>{credential.issuer}</td>
-                        <td>{credential.issuanceDate}</td>
-                        <td>{credential.type}</td>
-                        <td><button onClick={() => prove(credential)}>Prove</button></td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-            <textarea value={JSON.stringify(merkleProof, null, 2)}/>
-        </div>
+        <Container width="100%">
+            <Stack>
+                <FormControl>
+                    <FormLabel>Credential</FormLabel>
+                    <Textarea id="credential" placeholder="Credential" onChange={e => setCredentialString(e.target.value)} value={credentialString}/>
+                </FormControl>
+                <Button onClick={store}>Store</Button>
+                <Button onClick={getDummyCredential}>Get Dummy Credential</Button>
+                <Button onClick={clearCredentials}>Clear</Button>
+                <TableContainer>
+                    <Table variant="simple">
+                        <Thead>
+                            <Tr>
+                                <Th></Th>
+                                <Th>Subject</Th>
+                                <Th>Issuer</Th>
+                                <Th>Issued</Th>
+                                <Th>Type</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {credentials.credentials.map((credential, index) => (
+                                <Tr key={index}>
+                                    <Td fontSize={'xs'}><Button onClick={() => selectCredential(credential)}>Use</Button></Td>
+                                    <Td fontSize={'xs'}>{credential.credentialSubject.id}</Td>
+                                    <Td fontSize={'xs'}>{credential.issuer}</Td>
+                                    <Td fontSize={'xs'}>{credential.issuanceDate}</Td>
+                                    <Td fontSize={'xs'}>{credential.type}</Td>
+                                </Tr>
+                            ))}
+                        </Tbody>
+                    </Table>
+                </TableContainer>
+                <HStack>
+                    <FormLabel>Claim</FormLabel>
+                    <Input value={claimValue}/>
+                </HStack>
+                <HStack>
+                    <FormLabel>Merkle Proof</FormLabel>
+                    <Textarea value={JSON.stringify(merkleProof, null, 2)}/>
+                </HStack>
+            </Stack>
+        </Container>
     )
 }

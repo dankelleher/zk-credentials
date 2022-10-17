@@ -15,6 +15,12 @@ export const useCredentials = () => {
     const [credentials, setCredentials] = useState<VerifiableCredential[]>([]);
     const [error, setError] = useState<string>();
     const [loading, setLoading] = useState<boolean>(false);
+    const [fetched, setFetched] = useState<boolean>(false);
+
+    useEffect(() => {
+        console.log('saving credentials to storage', credentials);
+        if (fetched) saveCredentials();
+    }, [credentials])
 
     const addCredential = useCallback(async (credential: VerifiableCredential) => {
         setCredentials([...credentials, credential]);
@@ -33,6 +39,7 @@ export const useCredentials = () => {
         try {
             const credentials = await fetchCredentialsFromStorage();
             setCredentials(credentials);
+            setFetched(true);
         } catch (e: any) {
             setError(e.toString());
             console.error(e);
