@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
+import { UInt32, Field, CircuitString} from "snarkyjs";
 
 export const useSnarky = () => {
     // let Prover: any;
@@ -8,6 +9,7 @@ export const useSnarky = () => {
     const [error, setError] = useState<string>();
     const [proof, setProof] = useState<string>();
     const ProverRef = useRef<any>();
+    // const [proverRef, setProverRef] = useState<Prover>(); 
 
     useEffect(() => {
         (async () => {
@@ -21,9 +23,22 @@ export const useSnarky = () => {
 
     const prove = useCallback(async (dobLeaf: string) => {
         if (prover) {
+            //extract data from dobLeaf
+            const claims = dobLeaf.toString().split("|").map(claim => claim.split(":"));
+            const yearClaim = claims.find(claim => claim[1] === "dateOfBirth.year");
+            // TODO is this the correct way to throw an error in a zk program?
+            if (!yearClaim) throw new Error("No year claim found");
+
+            // now we have the year, turn it into a Uint32 and compare
+            const year = UInt32.from(yearClaim[3]);
+            let date = new Date().getFullYear() - 21
+            console.log(date)
+            const publicYear = UInt32.from(date.toString());
+            const salt = CircuitString.fromString(yearClaim[2]);//Field.fromString(yearClaim[2])
+            
             console.log("Proving...");
             setProof("Proving...");
-            const result = await Prover.generateProof(dobLeaf);
+            const result = await Prover.generateProof(year, salt, publicYear);
             setProof(result);
             console.log("proof: ", result);
         } else {
