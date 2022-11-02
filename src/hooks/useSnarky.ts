@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import { UInt32, Field, CircuitString} from "snarkyjs";
+import { UInt32, Field, CircuitString, Proof} from "snarkyjs";
 
 export const useSnarky = () => {
     // let Prover: any;
@@ -10,6 +10,7 @@ export const useSnarky = () => {
     const [proof, setProof] = useState<string>();
     const ProverRef = useRef<any>();
     // const [proverRef, setProverRef] = useState<Prover>(); 
+    const [verifying, setVerifying] = useState<boolean>(false);
 
     useEffect(() => {
         (async () => {
@@ -41,6 +42,9 @@ export const useSnarky = () => {
             const result = await Prover.generateProof(year, salt, publicYear);
             setProof(result);
             console.log("proof: ", result);
+            console.log("Verifying proof...")
+            const verifyResult = await result.verify();
+            console.log("Verified: ", verifyResult)
         } else {
             console.log("Building prover...", building);
             setProof("Building prover...");
@@ -75,9 +79,24 @@ export const useSnarky = () => {
             });
     }, [building, Prover]);
 
+    const verify = useCallback(async (proof: string) => {
+        console.log("Verifying proof...", verifying);
+        const circuitProof = (Proof<Field>).fromJSON(JSON.parse(proof));
+        setVerifying(true);
+        Prover.verifyProof(circuitProof)
+            .then((res: any) => {
+                console.log("Verifying result: ", res)
+            }).catch((err: any) => {
+                console.log("Verifying failed")
+                setError(err.toString())
+                console.error(err)
+            })
+    }, [verifying])
+
     return {
         compile,
         prove,
+        verify,
         proof,
         error,
         building

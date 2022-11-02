@@ -16,6 +16,7 @@ import {ZKProof} from "./components/ZKProof";
 import {Credential} from "./components/Credential";
 import {CredentialProofProvider} from "./context/CredentialProof";
 import {Payload} from "./components/Payload";
+import {Verify} from "./components/Verify";
 
 export const App = () => (
     <ChakraProvider theme={theme}>
@@ -31,11 +32,13 @@ export const App = () => (
                     <Tab>Credential</Tab>
                     <Tab>ZK Proof</Tab>
                     <Tab>Payload</Tab>
+                    <Tab>Verify</Tab>
                   </TabList>
                   <TabPanels>
                     <TabPanel><Credential /></TabPanel>
                     <TabPanel><ZKProof /></TabPanel>
                     <TabPanel><Payload /></TabPanel>
+                    <TabPanel><Verify /></TabPanel>
                   </TabPanels>
                 </Tabs>
               </VStack>
