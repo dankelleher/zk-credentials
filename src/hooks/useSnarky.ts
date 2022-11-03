@@ -81,7 +81,9 @@ export const useSnarky = () => {
 
     const verify = useCallback(async (proof: string) => {
         console.log("Verifying proof...", verifying);
+        
         const circuitProof = (Proof<Field>).fromJSON(JSON.parse(proof));
+        console.log("Proof: ", circuitProof)
         setVerifying(true);
         Prover.verifyProof(circuitProof)
             .then((res: any) => {

@@ -5,12 +5,13 @@ type CredentialProof = {
     merkleProof: MerkleProof | undefined;
     zkProof: string | undefined;
     issuer: string | undefined;
+    signature: string | undefined;
 }
 type CredentialProofContextType = CredentialProof & {
     set: <T extends keyof CredentialProof>(property: T, value: CredentialProof[T]) => void;
 }
 const defaultProofContext = {
-    issuer: undefined, merkleProof: undefined, merkleRoot: undefined, zkProof: undefined, set: () => {}
+    issuer: undefined, merkleProof: undefined, merkleRoot: undefined, zkProof: undefined, signature: undefined, set: () => {}
 };
 const CredentialProofContext = createContext<CredentialProofContextType>(defaultProofContext);
 

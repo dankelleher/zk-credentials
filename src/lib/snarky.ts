@@ -121,10 +121,10 @@ export class Prover {
 
   static async generateProof(year: UInt32, salt: CircuitString, publicYear: UInt32): Promise<any> {
     let user = new User(year, salt, publicYear);
-    // return JSON.stringify(
-    //     await Prover.proverProgram!.verifyAge(user.hash(), user)
-    // );
-    return await Prover.proverProgram!.verifyAge(user.hash(), user)
+    return JSON.stringify(
+        await Prover.proverProgram!.verifyAge(user.hash(), user)
+    );
+    // return await Prover.proverProgram!.verifyAge(user.hash(), user)
   }
 
   static async verifyProof(proof: Proof<Field>): Promise<boolean> {

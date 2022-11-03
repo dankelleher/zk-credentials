@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {VerifiableCredential} from "../types/VerifiableCredential";
+import {verifyMerkleProof, verifySignature} from "../lib/credentials"
 
 const fetchCredentialsFromStorage = async (): Promise<VerifiableCredential[]> => {
     const credentialString = window.localStorage.getItem('credentials');
@@ -60,6 +61,36 @@ export const useCredentials = () => {
         }
     }, [credentials]);
 
+    const verifyMerkleProofAction = async (proof: string, merkleRoot: string, targetHash: string): Promise<boolean | undefined> => {
+        setLoading(true)
+
+        try {
+            const result = await verifyMerkleProof(proof, merkleRoot, targetHash)
+            return result
+        } catch (e: any) {
+            setError(e.toString())
+            console.error(e);
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const verifySignatureAction = async (merkleRootString: string, signatureString: string, issuer: string): Promise<boolean | undefined> => {
+        setLoading(true)
+
+        try {
+            const result = await verifySignature(merkleRootString, signatureString, issuer)
+            return result
+        } catch (e: any) {
+            setError(e.toString())
+            console.error(e);
+        } finally {
+            setLoading(false)
+        }
+
+        return false
+    }
+
     useEffect(() => {
         fetchCredentials();
     }, [fetchCredentials]);
@@ -72,6 +103,8 @@ export const useCredentials = () => {
         removeCredential,
         fetchCredentials,
         saveCredentials,
-        clearCredentials
+        clearCredentials,
+        verifyMerkleProofAction,
+        verifySignatureAction
     };
 }

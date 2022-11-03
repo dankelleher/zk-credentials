@@ -7,6 +7,7 @@ import {
     usePrefersReducedMotion,
 } from "@chakra-ui/react"
 import logo from "./logo.svg"
+import civicLogo from "./public/civic-logo-white.svg"
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
@@ -19,6 +20,6 @@ export const Logo = forwardRef<ImageProps, "img">((props, ref) => {
     const animation = prefersReducedMotion
         ? undefined
         : `${spin} infinite 20s linear`
-
-    return <chakra.img animation={animation} src={logo} ref={ref} {...props} />
+    //animation={animation}
+    return <chakra.img src={civicLogo} ref={ref} {...props} />
 })

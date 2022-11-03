@@ -1,7 +1,8 @@
 import {FC, useCallback, useState} from "react";
 import {useCredentials} from "../hooks/useCredentials";
-import {extractMerkleProofFromCredential, getClaim, MerkleProof} from "../lib/credentials";
+import {extractMerkleProofFromCredential, getClaim, getSignature, MerkleProof} from "../lib/credentials";
 import {VerifiableCredential} from "../types/VerifiableCredential";
+import { CivicOrangeButton } from "./CivicOrangeButton";
 import {
     Box, Button,
     Container,
@@ -33,12 +34,14 @@ export const Credential: FC = () => {
     const selectCredential = useCallback(async (credential: VerifiableCredential) => {
         const merkle = extractMerkleProofFromCredential(credential, claimIdentifier);
         const claim = getClaim(credential, claimIdentifier);
+        const signature = getSignature(credential, claimIdentifier);
 
         setMerkleProof(merkle);
         setClaimValue(claim.value);
 
         set('merkleProof', merkle);
         set('issuer', credential.issuer);
+        set('signature', signature);
     }, [set]);
 
     const store = useCallback(() => {
@@ -65,7 +68,7 @@ export const Credential: FC = () => {
                     <FormLabel>Credential</FormLabel>
                     <Textarea id="credential" placeholder="Credential" onChange={e => setCredentialString(e.target.value)} value={credentialString}/>
                 </FormControl>
-                <Button onClick={store}>Store</Button>
+                <CivicOrangeButton onClick={store} text={"Store a credential"} />
                 <Button onClick={getDummyCredential}>Get Dummy Credential</Button>
                 <Button onClick={clearCredentials}>Clear</Button>
                 <TableContainer>
