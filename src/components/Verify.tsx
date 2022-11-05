@@ -31,6 +31,7 @@ export const Verify: FC = () => {
         }
 
         //3. verify proof
+        
     }
 
     return <Container width="100%">
