@@ -2,7 +2,7 @@ import * as nacl from 'tweetnacl';
 import { decode } from 'bs58';
 import {TextEncoder} from "util";
 
-const credential = require('../dummyCredential.json');
+const credential = require('../src/dummyCredential.json');
 
 const merkleRootString = credential.proof.merkleRoot;
 // credential-commons requires this rather than the more natural Buffer.from(merkleRootString, 'hex')
