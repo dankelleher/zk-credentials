@@ -31,7 +31,11 @@ export const Verify: FC = () => {
         }
 
         //3. verify proof
-        
+        if(proof){
+            console.log("Verifying proof...")
+            snarky.verify(proof)
+        }
+
     }
 
     return <Container width="100%">
