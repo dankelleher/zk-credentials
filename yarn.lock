@@ -10293,10 +10293,10 @@ slash@^4.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-4.0.0.tgz#2422372176c4c6c5addb5e2ada885af984b396a7"
   integrity sha512-3dOsAHXXUkQTpOYcoAxLIorMTp4gIQr5IW3iVb7A7lFIp0VHhnynm9izx6TssdrIcVIESAlVjtnO2K8bg+Coew==
 
-snarkyjs@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/snarkyjs/-/snarkyjs-0.6.0.tgz#65a820e5fcdbe1005002695e26a92cd989c76b40"
-  integrity sha512-JcPlGrG3Ixi3o76m4nlEKyMxbelh7ZVxThdbWH7CmW81jSid89VGwVuBzVWcnrMElCl8PBV5LOONTO34VsWY8A==
+snarkyjs@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/snarkyjs/-/snarkyjs-0.6.1.tgz#ecc94b9c0cacf3e092c9fffd3a847b25a9f95f4e"
+  integrity sha512-yr7H9pOi1kkHSwgC4zuo0IhrpJJtqrRSYMwqMhNmWnh4GE7rKXZetV0H9bJbiOE3NSIcO2jUdx20ZfiaVJR6rw==
   dependencies:
     env "^0.0.2"
     isomorphic-fetch "^3.0.0"
