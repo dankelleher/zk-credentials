@@ -12,7 +12,9 @@ const signatureString = credential.proof.merkleRootSignature.signature;
 const signature = Buffer.from(signatureString, 'hex');
 
 const signerPublicKeyString = credential.issuer.replace(/(did:.*:)/, '');
+console.log("Signer before decode: ", signerPublicKeyString)
 const signerPublicKey = decode(signerPublicKeyString);
+console.log("Signer pub key: ", signerPublicKey)
 
 console.log('verifying signature...', {
     merkleRootString,

@@ -3,6 +3,7 @@ import {Leaf, VerifiableCredential} from "../types/VerifiableCredential";
 import * as nacl from 'tweetnacl';
 import { decode } from 'bs58';
 
+const bs58 = require('bs58')
 
 
 export type MerkleProof = {
@@ -71,12 +72,14 @@ export const verifyMerkleProof = (proof: string, merkleRoot: string, targetHash:
 }
 
 export const verifySignature = (merkleRootString: string, signatureString: string, issuer: string) => {
+    console.log("Issuer input: ", issuer)
     const merkleRoot = new TextEncoder().encode(merkleRootString);
 
     const signature = Buffer.from(signatureString, 'hex');
 
     const signerPublicKeyString = issuer.replace(/(did:.*:)/, '');
-    const signerPublicKey = decode(signerPublicKeyString);
+    console.log("Fixed issuer string: ", signerPublicKeyString)
+const signerPublicKey = bs58.decode(signerPublicKeyString);
 
     const verification = nacl.sign.detached.verify(merkleRoot, signature, signerPublicKey);
     console.log('signature verified', verification);
