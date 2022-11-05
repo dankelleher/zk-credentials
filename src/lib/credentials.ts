@@ -49,12 +49,15 @@ export const extractMerkleProofFromPayload = (payload: string): MerkleProof => {
 
 export const extractSignatureFromPayload = (payload: string): string => {
     const payloadJSON = JSON.parse(payload)
-    return payloadJSON.signature
+    console.log("Full payload: ", payloadJSON)
+    console.log("Signature: ", payloadJSON.signature)
+    return JSON.stringify(payloadJSON.signature)
 }
 
 export const extractIssuerFromPayload = (payload: string): string => {
     const payloadJSON = JSON.parse(payload)
-    return payloadJSON.issuer
+    console.log("Issuer: ", payloadJSON.issuer)
+    return JSON.stringify(payloadJSON.issuer)
 }
 
 export const verifyMerkleProof = (proof: string, merkleRoot: string, targetHash: string): boolean => {

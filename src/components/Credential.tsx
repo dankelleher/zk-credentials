@@ -35,13 +35,14 @@ export const Credential: FC = () => {
         const merkle = extractMerkleProofFromCredential(credential, claimIdentifier);
         const claim = getClaim(credential, claimIdentifier);
         const signature = getSignature(credential, claimIdentifier);
+        console.log("Signature... ", signature)
 
         setMerkleProof(merkle);
         setClaimValue(claim.value);
 
         set('merkleProof', merkle);
         set('issuer', credential.issuer);
-        set('signature', signature);
+        set('signature', JSON.stringify(signature));
     }, [set]);
 
     const store = useCallback(() => {

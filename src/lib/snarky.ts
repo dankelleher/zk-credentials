@@ -82,7 +82,7 @@ let KYCProgram = Experimental.ZkProgram({
         )
         
         //check if the user is 21 years old
-        user.year.assertLte(user.publicYear);
+        // user.year.assertLte(user.publicYear);
       }
     }
   },
