@@ -29,6 +29,7 @@ export const Credential: FC = () => {
     const { set } = useCredentialProof();
     const [merkleProof, setMerkleProof] = useState<MerkleProof>();
     const [claimValue, setClaimValue] = useState<string>();
+    const [signatureValue, setSignatureValue] = useState<string>();
     const [credentialString, setCredentialString] = useState<string>();
 
     const selectCredential = useCallback(async (credential: VerifiableCredential) => {
@@ -39,10 +40,11 @@ export const Credential: FC = () => {
 
         setMerkleProof(merkle);
         setClaimValue(claim.value);
+        setSignatureValue(signature)
 
         set('merkleProof', merkle);
         set('issuer', credential.issuer);
-        set('signature', JSON.stringify(signature));
+        set('signature', signature);
     }, [set]);
 
     const store = useCallback(() => {
