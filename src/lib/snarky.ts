@@ -127,7 +127,7 @@ export class Prover {
     // return await Prover.proverProgram!.verifyAge(user.hash(), user)
   }
 
-  static async verifyProof(proof: Proof<Field>): Promise<boolean> {
+  static async verifyProof<T>(proof: Proof<T>): Promise<boolean> {
     try {
       // NOTE: proof.verify() just verifies if a proof is valid, however, you most likely want to verify the proof *against* a verificationKey (verifier index) to make sure the proof actually fits your initial program
       // proof.verify();

@@ -1,16 +1,14 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import { UInt32, Field, CircuitString, Proof} from "snarkyjs";
+import {ZKProof} from "../types/ZKProof";
 
 export const useSnarky = () => {
-    // let Prover: any;
-
-    const [building, setBuilding] = useState<boolean>(false);
     const [prover, setProver] = useState<boolean>(false);
     const [error, setError] = useState<string>();
-    const [proof, setProof] = useState<string>();
+    const [proof, setProof] = useState<ZKProof>();
     const ProverRef = useRef<any>();
-    // const [proverRef, setProverRef] = useState<Prover>(); 
     const [verifying, setVerifying] = useState<boolean>(false);
+    const [status, setStatus] = useState<'uninitialised' | 'compiling' | 'proving' | 'error' | 'ready'>('uninitialised');
 
     useEffect(() => {
         (async () => {
@@ -34,65 +32,80 @@ export const useSnarky = () => {
             const year = UInt32.from(yearClaim[3]);
             let date = new Date().getFullYear() - 21
             console.log(date)
-            const publicYear = UInt32.from(date.toString());
+            const publicYear = UInt32.from(date);
             const salt = CircuitString.fromString(yearClaim[2]);//Field.fromString(yearClaim[2])
-            
+
             console.log("Proving...");
-            setProof("Proving...");
-            const result = await Prover.generateProof(year, salt, publicYear);
-            setProof(result);
-            console.log("proof: ", result);
-            console.log("Verifying proof...")
-            const verifyResult = await result.verify();
-            console.log("Verified: ", verifyResult)
+            setStatus('proving');
+
+            try {
+                const result = await Prover.generateProof(year, salt, publicYear)
+                setStatus('ready');
+                setProof(result);
+                console.log("proof: ", result);
+                console.log("Verifying proof...")
+                const verifyResult = await result.verify();
+                console.log("Verified: ", verifyResult)
+            } catch (e: any) {
+                console.log(e)
+                setStatus('error');
+                setError(e.message);
+            }
         } else {
-            console.log("Building prover...", building);
-            setProof("Building prover...");
-            setBuilding(true);
+            setStatus('compiling');
+            // TODO remove duplication with the below
             Prover.build()
                 .then((p: any) => {
                     setProver(true);
-                    setBuilding(false);
+                    setStatus('ready');
                     prove(dobLeaf);
                 })
                 .catch((e: any) => {
+                    setStatus('error');
                     console.log("Building failed");
                     setError(e.toString());
                     console.error(e);
                 });
         }
-    }, [prover, Prover, building]);
+    }, [prover, Prover, status]);
 
     const compile = useCallback(async () => {
-        console.log("Building prover...", building);
-        setProof("Building prover...");
-        setBuilding(true);
+        setStatus('compiling');
         Prover.build()
             .then((p: any) => {
                 setProver(true);
-                setBuilding(false);
+                setStatus('ready');
             })
             .catch((e: any) => {
+                setStatus('error');
                 console.log("Building failed");
                 setError(e.toString());
                 console.error(e);
             });
-    }, [building, Prover]);
+    }, [status, Prover]);
 
-    const verify = useCallback(async (proof: string) => {
+    const verify = useCallback(async (proof: ZKProof) => {
         console.log("Verifying proof...", verifying);
-        
-        const circuitProof = new Proof<Field>(JSON.parse(proof))
+
+        // this is not JSON, but rather the string representation of the proof,
+        // but Snarky calls it JSON
+        // const circuitProof = Proof.fromJSON(proof);
+        const publicYear = UInt32.from(proof.publicInput[0]);
+        const p = {
+            ...proof,
+            publicInput: [publicYear],
+        }
+        const circuitProof = new Proof<UInt32[]>(p)
         console.log("Proof: ", circuitProof)
         setVerifying(true);
         Prover.verifyProof(circuitProof)
             .then((res: any) => {
                 console.log("Verifying result: ", res)
             }).catch((err: any) => {
-                console.log("Verifying failed")
-                setError(err.toString())
-                console.error(err)
-            })
+            console.log("Verifying failed")
+            setError(err.toString())
+            console.error(err)
+        })
     }, [verifying])
 
     return {
@@ -101,6 +114,6 @@ export const useSnarky = () => {
         verify,
         proof,
         error,
-        building
+        status
     }
 };

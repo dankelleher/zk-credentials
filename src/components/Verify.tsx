@@ -1,6 +1,6 @@
 import React, {FC, useState} from "react";
 import {useSnarky} from "../hooks/useSnarky";
-import {Button, Container, Input, Stack} from "@chakra-ui/react";
+import {Button, Container, Input, Stack, Textarea} from "@chakra-ui/react";
 
 import { useCredentials } from "../hooks/useCredentials";
 import { CredentialProof } from "../types/CredentialProof";
@@ -23,14 +23,14 @@ export const Verify: FC = () => {
         credentials.verifySignatureAction(payload.merkleProof.merkleRoot, payload.signature, payload.issuer)
 
         //3. verify proof
-            console.log("Verifying proof...")
-            snarky.verify(payload.zkProof)
+        console.log("Verifying proof...")
+        await snarky.verify(payload.zkProof);
     }
 
     return <Container width="100%">
         <Stack style={{ marginBottom: "2px" }}>
-            <label htmlFor="proof">Proof: </label>
-            <Input id="payload" onChange={(e) => setPayload(JSON.parse(e.target.value))} type="text" />
+            <label htmlFor="proof">Verify: </label>
+            <Textarea onChange={(e) => setPayload(JSON.parse(e.target.value))} rows={50} width="100%" value={JSON.stringify(payload, null, 2)} placeholder="Paste Payload"/>
             <Button onClick={verifyEverything}>Verify</Button>
         </Stack>
     </Container>
