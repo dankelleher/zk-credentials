@@ -2,6 +2,26 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import { UInt32, Field, CircuitString, Proof} from "snarkyjs";
 import {ZKProof} from "../types/ZKProof";
 
+const extractDataFromClaim = (dobLeaf: string) => {
+    const claims = dobLeaf.toString().split("|").map(claim => claim.split(":"));
+    const yearClaim = claims.find(claim => claim[1] === "dateOfBirth.year");
+    // TODO is this the correct way to throw an error in a zk program?
+    if (!yearClaim) throw new Error("No year claim found");
+
+    // now we have the year, turn it into a Uint32 and compare
+    const year = UInt32.from(yearClaim[3]);
+    let date = new Date().getFullYear() - 21
+    console.log(date)
+    const publicYear = UInt32.from(date);
+
+    // TODO fix regex to get these
+    const [otherStuffLeftString, otherStuffRightString] = dobLeaf.match(/(.*)...(.*)/) || []  // TODO check
+
+    // TODO convert to circuit strings and return here
+
+    return {yearClaim, year, publicYear};
+};
+
 export const useSnarky = () => {
     const [prover, setProver] = useState<boolean>(false);
     const [error, setError] = useState<string>();
@@ -23,23 +43,13 @@ export const useSnarky = () => {
     const prove = useCallback(async (dobLeaf: string) => {
         if (prover) {
             //extract data from dobLeaf
-            const claims = dobLeaf.toString().split("|").map(claim => claim.split(":"));
-            const yearClaim = claims.find(claim => claim[1] === "dateOfBirth.year");
-            // TODO is this the correct way to throw an error in a zk program?
-            if (!yearClaim) throw new Error("No year claim found");
-
-            // now we have the year, turn it into a Uint32 and compare
-            const year = UInt32.from(yearClaim[3]);
-            let date = new Date().getFullYear() - 21
-            console.log(date)
-            const publicYear = UInt32.from(date);
-            const salt = CircuitString.fromString(yearClaim[2]);//Field.fromString(yearClaim[2])
+            const { year, otherStuffLeft, otherStuffRight } = extractDataFromClaim(dobLeaf);
 
             console.log("Proving...");
             setStatus('proving');
 
             try {
-                const result = await Prover.generateProof(year, salt, publicYear)
+                const result = await Prover.generateProof(year, otherStuffLeft, otherStuffRight)
                 setStatus('ready');
                 setProof(result);
                 console.log("proof: ", result);

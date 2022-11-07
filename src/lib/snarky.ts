@@ -29,14 +29,14 @@ import {
 // }
 export class User extends CircuitValue {
   @prop year: UInt32 //year of birth
-  @prop salt: CircuitString
-  @prop publicYear: UInt32
+  @prop otherDataLeft: CircuitString
+  @prop otherDataRight: CircuitString
 
-  constructor(year: UInt32, salt: CircuitString, publicYear: UInt32){
+  constructor(year: UInt32, otherDataLeft: CircuitString, otherDataRight: CircuitString){
     super()
     this.year = year
-    this.salt = salt
-    this.publicYear = publicYear
+    this.otherDataLeft = otherDataLeft
+    this.otherDataRight = otherDataRight
   }
 
   hash(): Field {
@@ -45,7 +45,7 @@ export class User extends CircuitValue {
 }
 
 let KYCProgram = Experimental.ZkProgram({
-  publicInput: Field,
+  publicInput: UInt32,
 
   methods: {
     // verifyAge: {
@@ -72,17 +72,21 @@ let KYCProgram = Experimental.ZkProgram({
     verifyAge: {
       privateInputs: [User],
 
-      method(publicHash: Field, user: User) {
+      // TODO pretty sure we can remove the publicYear
+      method(
+          publicInput: UInt32,
+          user: User
+      ) {
         //check if the hash(salt + age) == publicHash
-        publicHash.assertEquals(
-          // Poseidon.hash(
-          //   user.salt.toFields().concat(user.year.toFields())
-          // )
-          user.hash()
-        )
-        
+        // publicHash.assertEquals(
+        //   // Poseidon.hash(
+        //   //   user.salt.toFields().concat(user.year.toFields())
+        //   // )
+        //   user.hash()
+        // )
+
         //check if the user is 21 years old
-        // user.year.assertLte(user.publicYear);
+        user.year.assertLte(publicInput);
       }
     }
   },
@@ -121,9 +125,8 @@ export class Prover {
 
   static async generateProof(year: UInt32, salt: CircuitString, publicYear: UInt32): Promise<any> {
     let user = new User(year, salt, publicYear);
-    return JSON.stringify(
-        await Prover.proverProgram!.verifyAge(user.hash(), user)
-    );
+    const proof = await Prover.proverProgram!.verifyAge(publicYear, user);
+    return JSON.stringify(proof);
     // return await Prover.proverProgram!.verifyAge(user.hash(), user)
   }
 
