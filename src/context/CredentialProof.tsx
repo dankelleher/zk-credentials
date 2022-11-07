@@ -1,12 +1,7 @@
 import {createContext, FC, PropsWithChildren, useContext, useState} from "react";
 import {MerkleProof} from "../lib/credentials";
+import {CredentialProof} from "../types/CredentialProof";
 
-type CredentialProof = {
-    merkleProof: MerkleProof | undefined;
-    zkProof: string | undefined;
-    issuer: string | undefined;
-    signature: string | undefined;
-}
 type CredentialProofContextType = CredentialProof & {
     set: <T extends keyof CredentialProof>(property: T, value: CredentialProof[T]) => void;
 }

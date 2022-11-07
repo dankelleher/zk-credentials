@@ -48,15 +48,15 @@ export const Credential: FC = () => {
     }, [set]);
 
     const store = useCallback(() => {
-        if (credentialString) {
-            credentials.addCredential(JSON.parse(credentialString));
-            credentials.saveCredentials();
-            setCredentialString('');
-        }
+        const credentialToStore = credentialString ? JSON.parse(credentialString) : dummyCredential;
+        credentials.addCredential(credentialToStore);
+        credentials.saveCredentials();
+        setCredentialString('');
     }, [credentials, credentialString]);
 
     const getDummyCredential = useCallback(() => {
         setCredentialString(JSON.stringify(dummyCredential, null, 2));
+        setTimeout(store, 10);  // TODO hack - remove this later and bundle getDummy with store
     }, [setCredentialString]);
 
     const clearCredentials = useCallback(() => {
@@ -67,12 +67,12 @@ export const Credential: FC = () => {
     return (
         <Container width="100%">
             <Stack>
-                <FormControl>
+                <FormControl hidden={true}>
                     <FormLabel>Credential</FormLabel>
                     <Textarea id="credential" placeholder="Credential" onChange={e => setCredentialString(e.target.value)} value={credentialString}/>
                 </FormControl>
-                <CivicOrangeButton onClick={store} text={"Store a credential"} />
                 <Button onClick={getDummyCredential}>Get Dummy Credential</Button>
+                <CivicOrangeButton onClick={store} text={"Store a credential"} />
                 <Button onClick={clearCredentials}>Clear</Button>
                 <TableContainer>
                     <Table variant="simple">

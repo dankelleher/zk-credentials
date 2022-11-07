@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {VerifiableCredential} from "../types/VerifiableCredential";
-import {verifyMerkleProof, verifySignature} from "../lib/credentials"
+import {MerkleProof, verifyMerkleProof, verifySignature} from "../lib/credentials"
 
 const fetchCredentialsFromStorage = async (): Promise<VerifiableCredential[]> => {
     const credentialString = window.localStorage.getItem('credentials');
@@ -61,12 +61,13 @@ export const useCredentials = () => {
         }
     }, [credentials]);
 
-    const verifyMerkleProofAction = async (proof: string, merkleRoot: string, targetHash: string): Promise<boolean | undefined> => {
+    const verifyMerkleProofAction = (merkleProof: MerkleProof): void => {
         setLoading(true)
-
         try {
-            const result = await verifyMerkleProof(proof, merkleRoot, targetHash)
-            return result
+            const result = verifyMerkleProof(merkleProof)
+            if (!result) {
+                setError("Merkle proof verification failed")
+            }
         } catch (e: any) {
             setError(e.toString())
             console.error(e);
@@ -75,20 +76,20 @@ export const useCredentials = () => {
         }
     }
 
-    const verifySignatureAction = async (merkleRootString: string, signatureString: string, issuer: string): Promise<boolean | undefined> => {
+    const verifySignatureAction = (merkleRootString: string, signatureString: string, issuer: string): void => {
         setLoading(true)
 
         try {
-            const result = await verifySignature(merkleRootString, signatureString, issuer)
-            return result
+            const result = verifySignature(merkleRootString, signatureString, issuer)
+            if (!result) {
+                setError("Signature verification failed")
+            }
         } catch (e: any) {
             setError(e.toString())
             console.error(e);
         } finally {
             setLoading(false)
         }
-
-        return false
     }
 
     useEffect(() => {

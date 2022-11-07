@@ -1,56 +1,37 @@
 import React, {FC, useState} from "react";
 import {useSnarky} from "../hooks/useSnarky";
-import {Button, Container, Input, Stack, Textarea} from "@chakra-ui/react";
+import {Button, Container, Input, Stack} from "@chakra-ui/react";
 
-import { extractMerkleProofFromPayload, extractSignatureFromPayload, extractIssuerFromPayload, MerkleProof } from "../lib/credentials";
 import { useCredentials } from "../hooks/useCredentials";
+import { CredentialProof } from "../types/CredentialProof";
 
 export const Verify: FC = () => {
     const snarky = useSnarky();
     const credentials = useCredentials();
-    const [proof, setProof] = useState<string>();
-    const [payload, setPayload] = useState<string>();
+    const [payload, setPayload] = useState<CredentialProof>();
 
     const verifyEverything = async () => {
-        //require payload
-        if(!payload) return
-        //extract the data from the payload
-        const merkleProofData: MerkleProof = extractMerkleProofFromPayload(payload);
-        console.log("Merkle proof data: ", merkleProofData)
+        //require a complete payload (TODO clean up later and use the type system to enforce this)
+        if (!payload || !payload.issuer || !payload.merkleProof || !payload.zkProof || !payload.signature || !payload.issuer) return
+
+        console.log("Merkle proof data: ", payload.merkleProof)
+
         //1. verify merkle root
-        const verifyMerkleProofResult = await credentials.verifyMerkleProofAction(JSON.stringify(merkleProofData.proof), merkleProofData.merkleRoot, merkleProofData.targetHash)
-        if (verifyMerkleProofResult == false) {
-            console.log("Merkle proof verification failed")
-        }
+        credentials.verifyMerkleProofAction(payload.merkleProof)
+
         //2. verify credential
-        const signature: string = extractSignatureFromPayload(payload)
-        const issuer: string = extractIssuerFromPayload(payload)
-        const verifySignatureResult = await credentials.verifySignatureAction(merkleProofData.merkleRoot, signature, issuer)
-        if(verifySignatureResult == false){
-            //revert
-        }
+        credentials.verifySignatureAction(payload.merkleProof.merkleRoot, payload.signature, payload.issuer)
 
         //3. verify proof
-        if(proof){
             console.log("Verifying proof...")
-            snarky.verify(proof)
-        }
-
+            snarky.verify(payload.zkProof)
     }
 
     return <Container width="100%">
         <Stack style={{ marginBottom: "2px" }}>
             <label htmlFor="proof">Proof: </label>
-            <Input id="proof" onChange={(e) => setProof(e.target.value)} type="text" />
-            <Input id="payload" onChange={(e) => setPayload(e.target.value)} type="text" />
-            <Button onClick={() => proof && snarky.verify(proof)}>Verify proof</Button>
+            <Input id="payload" onChange={(e) => setPayload(JSON.parse(e.target.value))} type="text" />
             <Button onClick={verifyEverything}>Verify</Button>
         </Stack>
-        {/* <Textarea
-            style={{ width: "20vw" }}
-            value={snarky.proof?.toString() || snarky.error || ""}
-            readOnly={true}
-            placeholder="Proof"
-        /> */}
     </Container>
 }

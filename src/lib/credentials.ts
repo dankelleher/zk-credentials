@@ -3,9 +3,6 @@ import {Leaf, VerifiableCredential} from "../types/VerifiableCredential";
 import * as nacl from 'tweetnacl';
 import { decode } from 'bs58';
 
-const bs58 = require('bs58')
-
-
 export type MerkleProof = {
     proof: Proof<string>[],
     targetHash: string,
@@ -40,28 +37,7 @@ export const extractMerkleProofFromCredential = (credential: VerifiableCredentia
     return { proof, targetHash, merkleRoot };
 }
 
-export const extractMerkleProofFromPayload = (payload: string): MerkleProof => {
-    const payloadJSON = JSON.parse(payload)
-    const proof = payloadJSON.merkleProof.proof;
-    const targetHash = payloadJSON.merkleProof.targetHash;
-    const merkleRoot = payloadJSON.merkleProof.merkleRoot;
-    return { proof, targetHash, merkleRoot };
-}
-
-export const extractSignatureFromPayload = (payload: string): string => {
-    const payloadJSON = JSON.parse(payload)
-    console.log("Full payload: ", payloadJSON)
-    console.log("Signature: ", payloadJSON.signature)
-    return JSON.stringify(payloadJSON.signature)
-}
-
-export const extractIssuerFromPayload = (payload: string): string => {
-    const payloadJSON = JSON.parse(payload)
-    console.log("Issuer: ", payloadJSON.issuer)
-    return JSON.stringify(payloadJSON.issuer)
-}
-
-export const verifyMerkleProof = (proof: string, merkleRoot: string, targetHash: string): boolean => {
+export const verifyMerkleProof = ({proof, merkleRoot, targetHash}: MerkleProof): boolean => {
     console.log("Verifying merkle proof...")
     const merkleTools = new MerkleTools({ hashType: 'sha256' });
     const castedProof = proof as unknown as Proof<string>;
@@ -79,7 +55,7 @@ export const verifySignature = (merkleRootString: string, signatureString: strin
 
     const signerPublicKeyString = issuer.replace(/(did:.*:)/, '');
     console.log("Fixed issuer string: ", signerPublicKeyString)
-const signerPublicKey = bs58.decode(signerPublicKeyString);
+    const signerPublicKey = decode(signerPublicKeyString);
 
     const verification = nacl.sign.detached.verify(merkleRoot, signature, signerPublicKey);
     console.log('signature verified', verification);
